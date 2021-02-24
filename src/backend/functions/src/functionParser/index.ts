@@ -33,8 +33,7 @@ export class FunctionParser {
    * Looks for all files with .function.js and exports them on the group they belong to
    */
   private buildReactiveFunctions() {
-    console.log('ExportHelper - Build reactive cloud functions ... ');
-    const glob = require("glob");
+    console.log('FunctionParser - Building reactive cloud functions ... ');
     // Get all the files that has .function in the file name
     const functionFiles = glob.sync(`${this.rootPath}/**/*.function.js`, { cwd: this.rootPath, ignore: './node_modules/**' });
 
@@ -50,7 +49,7 @@ export class FunctionParser {
           this.exports[groupName] = {};
         }
 
-        console.log(`ExportHelper - Add reactive function ${functionName} to group ${groupName}`);
+        console.log(`FunctionParser - Add reactive function ${functionName} to group ${groupName}`);
 
         this.exports[groupName] = {
           ...this.exports[groupName],
@@ -58,14 +57,14 @@ export class FunctionParser {
         }
       }
     }
-    console.log('ExportHelper - Reactive functions added to exports');
+    console.log('FunctionParser - Reactive functions built successfully');
   }
 
   /**
    * Looks at all .endpoint.js files and adds them to the group they belong in
    */
   private buildRestfulApi() {
-    console.log('ExportHelper - Build api cloud functions ... ');
+    console.log('FunctionParser - Building API endpoints... ');
     const apiFiles = glob.sync(`${this.rootPath}/**/*.endpoint.js`, { cwd: this.rootPath, ignore: './node_modules/**' });
     const app = express();
 
@@ -87,20 +86,19 @@ export class FunctionParser {
 
       } catch (e) {
         console.log(`Failed to add the endpoint defined in ${file} to the ${groupName} Api. `, e);
+        throw `Failed to add the endpoint defined in ${file} to the ${groupName} Api.`;
       }
 
       app.use('/', router);
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({ extended: false }));
 
-      console.log(`ExportHelper - Add api for ${groupName}`);
-
       this.exports[groupName] = {
         ...this.exports[groupName],
         "api": functions.https.onRequest(app),
       }
     }
-    console.log(`ExportHelper - Api function added to exports ... `);
+    console.log('FunctionParser - Reactive functions built successfully...');
   }
 
   /**
